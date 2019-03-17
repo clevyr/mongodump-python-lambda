@@ -93,7 +93,6 @@ def main():
 
         if path.exists("/tmp/dump"):
             shutil.rmtree('/tmp/dump')
-        else:
             mkdir("/tmp/dump")
 
         database_names = None
