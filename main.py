@@ -93,7 +93,7 @@ def main():
 
         if path.exists("/tmp/dump"):
             shutil.rmtree('/tmp/dump')
-            mkdir("/tmp/dump")
+        mkdir("/tmp/dump")
 
         database_names = None
         try:
@@ -148,7 +148,7 @@ def email(error, from_address, addresses):
         ses = boto.client('ses', region_name=environ.get('SES_REGION'))
         bucket_name = environ.get('BUCKET_NAME')
         errString = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
-        response = ses.send_email(
+        ses.send_email(
             Source=from_address,
             Destination={
                 'ToAddresses': addresses
