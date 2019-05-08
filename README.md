@@ -1,6 +1,6 @@
 # Python mongodump
 
-[![](https://images.microbadger.com/badges/image/clevyr/mongodump-python-lambda.svg)](https://microbadger.com/images/clevyr/mongodump-python-lambda "Get your own image badge on microbadger.com")
+[![Badge](https://images.microbadger.com/badges/image/clevyr/mongodump-python-lambda.svg)](https://microbadger.com/images/clevyr/mongodump-python-lambda "Get your own image badge on microbadger.com")
 
 This is a Docker-compatible Python script to make a dump of a mongo database, puts it in a gzip compressed tarfile, and pushes it to an S3 bucket.
 
