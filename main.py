@@ -13,8 +13,6 @@ import traceback
 
 s3 = boto.resource("s3")
 
-RENEW_TIMER = None
-
 def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
     """
     Call in a loop to create terminal progress bar
@@ -36,25 +34,22 @@ def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, l
         print()
 
 def renew_token(client):
-    global RENEW_TIMER
-
-    client.renew_token(increment=60 * 60 * 72)
-    RENEW_TIMER = Timer(60 * 60 * 70, renew_token, (client,)) # Two hours minutes before TTL
-    RENEW_TIMER.start()
+    try:
+        client.renew_token(increment=60 * 60 * 72)
+    except hvac.exceptions.InvalidRequest as _:
+        # Swallow, as this is probably a root token
+        pass
+    except Exception as e:
+        exit(e)
 
 def exit(error=None):
     if error is not None:
         print('Error occured, sending email...')
         print(error)
         email(error, environ.get('EMAIL_FROM'), environ.get('EMAIL_TO').split(';'))
-    if RENEW_TIMER is not None:
-        RENEW_TIMER.cancel()
-        RENEW_TIMER.join(timeout=2)
 
 def main():
     try:
-        global RENEW_TIMER
-
         vault_secret = environ.get("VAULT_SECRET")
         bucket_name = environ.get("BUCKET_NAME")
         mongo_host = environ.get("MONGO_HOST")
