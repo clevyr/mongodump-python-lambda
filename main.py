@@ -39,6 +39,9 @@ def renew_token(client):
     except hvac.exceptions.InvalidRequest as _:
         # Swallow, as this is probably a root token
         pass
+    except hvac.exceptions.Forbidden as _:
+        # Swallow, as this is probably a root token
+        pass
     except Exception as e:
         exit(e)
 
