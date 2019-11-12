@@ -18,9 +18,9 @@ Make sure the lambda or fargate container has IAM access to `s3:PutObject and se
 | -------------- | --------------------------------------------------------------- | ---------------------------------- |
 | VAULT_SECRET   | the secret to pull from Hashicorp's Vault                       | `secret/testing-mongo`             |
 | VAULT_TOKEN    | the token used to access the vault                              | `s.7NaWxclhAr3EE22Z8guUQXw6`       |
-| VAULT_HOST     | the vault instance to connect to                                | `https://vault.principle-two.com`  |
-| BUCKET_NAME    | The S3 bucket to upload the backup to                           | `p2-dev-backups`                   |
-| MONGO_HOST     | The mongo database to backup                                    | `3.17.52.25`                       |
+| VAULT_HOST     | the vault instance to connect to                                | `https://vault.domain.com`         |
+| BUCKET_NAME    | The S3 bucket to upload the backup to                           | `example-dev-backups`              |
+| MONGO_HOST     | The mongo database to backup                                    | `database`                         |
 | MONGO_USERNAME | The mongo username to authenticate with                         | `username`                         |
 | MONGO_PASSWORD | The mongo password to authenticate with                         | `password`                         |
 | SES_REGION     | The region that SES is working in                               | `us-east-1`                        |
