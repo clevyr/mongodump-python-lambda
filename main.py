@@ -96,9 +96,10 @@ def main():
         database_names = None
         try:
             database_names = client.list_database_names()
+            database_names.remove('config')
         except Exception as e:
             exit(e)
-        
+
         # For each database
         for db_name in database_names:
             mkdir("/tmp/dump/{}".format(db_name))
