@@ -10,6 +10,7 @@ import hvac
 from pymongo import MongoClient
 import shutil
 import traceback
+import requests
 
 s3 = boto.resource("s3")
 
@@ -47,9 +48,14 @@ def renew_token(client):
 
 def exit(error=None):
     if error is not None:
-        print('Error occured, sending email...')
+        print('Error occured, details:')
         print(error)
-        email(error, environ.get('EMAIL_FROM'), environ.get('EMAIL_TO').split(';'))
+        if target := environ.get("EMAIL_TO"):
+            print(f'Emailing {target}')
+            email(error, environ.get('EMAIL_FROM'), environ.get('EMAIL_TO').split(';'))
+        if environ.get("SLACK_WEBHOOK"):
+            print('Posting to slack')
+            slack(error)
 
 def main():
     try:
@@ -96,9 +102,10 @@ def main():
         database_names = None
         try:
             database_names = client.list_database_names()
+            database_names.remove('config')
         except Exception as e:
             exit(e)
-        
+
         # For each database
         for db_name in database_names:
             mkdir("/tmp/dump/{}".format(db_name))
@@ -165,6 +172,11 @@ def email(error, from_address, addresses):
     except Exception as e:
         print('Error sending email...')
         print(e)
+
+def slack(error):
+    hook_url = environ.get('SLACK_WEBHOOK')
+    message = {'text': f'Backup: {environ.get("BUCKET_NAME")} failed. <!channel>'}
+    requests.post(hook_url, data=json.dumps(message), headers={'Content-Type': 'application/json'})
 
 if __name__ == "__main__":
     main()
