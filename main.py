@@ -102,7 +102,13 @@ def main():
         database_names = None
         try:
             database_names = client.list_database_names()
+        except Exception as e:
+            exit(e)
+
+        try:
             database_names.remove('config')
+        except ValueError:
+            pass
         except Exception as e:
             exit(e)
 
