@@ -64,16 +64,19 @@ def main():
         mongo_host = environ.get("MONGO_HOST")
         username = environ.get("MONGO_USERNAME")
         password = environ.get("MONGO_PASSWORD")
+        database = environ.get("MONGO_DATABASE")
 
         if mongo_host is None:
             import inquirer
             questions = [
                 inquirer.Text('mongo_host', message='What is the host of the Mongo instance?'),
+                inquirer.Text('database', message='What is the database to backup'),
                 inquirer.Text('username', message='What is the username for mongo?'),
                 inquirer.Password('password', message='What is the password for mongo?'),
             ]
             answers = inquirer.prompt(questions)
             mongo_host = answers['mongo_host']
+            database = answers['database']
             username = answers['username']
             password = answers['password']
 
@@ -86,10 +89,11 @@ def main():
             renew_token(client) # Immediately renew, we don't know the TTL
 
             secret = client.read(vault_secret)['data']
+            database = secret['database']
             username = secret['username']
             password = secret['password']
 
-        db_uri = "mongodb://{}:{}@{}/?authSource=admin".format(username, password, mongo_host)
+        db_uri = "mongodb://{}:{}@{}/{}".format(username, password, mongo_host, database)
         try:
             client = MongoClient(db_uri)
         except Exception as e:
@@ -99,21 +103,10 @@ def main():
             shutil.rmtree('/tmp/dump')
         mkdir("/tmp/dump")
 
-        database_names = None
-        try:
-            database_names = client.list_database_names()
-        except Exception as e:
-            exit(e)
-
-        try:
-            database_names.remove('config')
-        except ValueError:
-            pass
-        except Exception as e:
-            exit(e)
-
         # For each database
-        for db_name in database_names:
+        # Update: I modified this to only pull the database you pass it, rather than scan the entire database, so as to
+        #         prevent the user passed from needing database admin credentials
+        for db_name in [database]:
             mkdir("/tmp/dump/{}".format(db_name))
             database = client.get_database(db_name)
 
