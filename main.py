@@ -154,7 +154,7 @@ def email(error, from_address, addresses):
     try:
         ses = boto.client('ses', region_name=environ.get('SES_REGION'))
         bucket_name = environ.get('BUCKET_NAME')
-        errString = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
+        err_string = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
         ses.send_email(
             Source=from_address,
             Destination={
@@ -166,7 +166,7 @@ def email(error, from_address, addresses):
                 },
                 'Body': {
                     'Text': {
-                        'Data': f'The database backup for {bucket_name} failed:\n{errString}'
+                        'Data': f'The database backup for {bucket_name} failed:\n{err_string}'
                     }
                 }
             }
@@ -177,7 +177,9 @@ def email(error, from_address, addresses):
 
 def slack(error):
     hook_url = environ.get('SLACK_WEBHOOK')
-    message = {'text': f'Backup: {environ.get("BUCKET_NAME")} failed. <!channel>'}
+    bucket_name = environ.get('BUCKET_NAME')
+    err_string = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
+    message = {'text': f'<!channel> The database backup for {bucket_name} failed:\n```{err_string}```'}
     requests.post(hook_url, data=json.dumps(message), headers={'Content-Type': 'application/json'})
 
 if __name__ == "__main__":
