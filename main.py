@@ -11,8 +11,8 @@ from pymongo import MongoClient
 import shutil
 import traceback
 import requests
-
-s3 = boto.resource("s3")
+from google.cloud import storage
+from google.cloud import exceptions
 
 def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
     """
@@ -146,7 +146,10 @@ def main():
             tar.add("/tmp/dump", arcname=path.basename("dump"))
 
         if bucket_name is not None:
-            s3.Bucket(bucket_name).upload_file(filename, path.basename(filename))
+            client = storage.Client()
+            bucket = client.get_bucket(bucket_name)
+            blob = bucket.blob(path.basename(filename))
+            blob.upload_from_filename(filename)
         else:
             print(f"Backup is available at {filename}")
         print("Done")
