@@ -11,6 +11,8 @@ from pymongo import MongoClient
 import shutil
 import traceback
 import requests
+import slack
+import io
 from google.cloud import storage
 from google.cloud import exceptions
 
@@ -53,9 +55,9 @@ def exit(error=None):
         if target := environ.get("EMAIL_TO"):
             print(f'Emailing {target}')
             email(error, environ.get('EMAIL_FROM'), environ.get('EMAIL_TO').split(';'))
-        if environ.get("SLACK_WEBHOOK"):
+        if token := environ.get("SLACK_API_TOKEN"):
             print('Posting to slack')
-            slack(error)
+            postSlack(error, token)
 
 def main():
     try:
@@ -175,12 +177,24 @@ def email(error, from_address, addresses):
         print('Error sending email...')
         print(e)
 
-def slack(error):
-    hook_url = environ.get('SLACK_WEBHOOK')
-    bucket_name = environ.get('BUCKET_NAME')
-    err_string = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
-    message = {'text': f'<!channel> The database backup for {bucket_name} failed:\n```{err_string}```'}
-    requests.post(hook_url, data=json.dumps(message), headers={'Content-Type': 'application/json'})
+def postSlack(error, token):
+    try:
+        client = slack.WebClient(token=token)
+        err_text = ''.join(traceback.format_exception(etype=type(error), value=error, tb=error.__traceback__))
+        bucket_name = environ.get('BUCKET_NAME')
+        response = client.api_call(
+            api_method="files.upload",
+            params={
+                "channels": "#outages",
+                "content": err_text,
+                "filename": "Error",
+                "initial_comment": f"<!channel>\nThe database backup for {bucket_name} failed with the following error:"
+            }
+        )
+        assert response["ok"]
+    except Exception as e:
+        print('Error posting to slack...')
+        print(e)
 
 if __name__ == "__main__":
     main()

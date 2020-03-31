@@ -1,5 +1,7 @@
 FROM python:3-alpine
 
+RUN apk add gcc musl-dev
+
 WORKDIR /app
 
 COPY requirements.txt /app
